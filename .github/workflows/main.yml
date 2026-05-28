@@ -1,0 +1,33 @@
+name: deploy on push production branch
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check out the code to build server
+        uses: actions/checkout@v4
+
+      - name: deploying latest change on ec2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+
+          script: |
+            cd /home/ubuntu/vue-realworld-example-app
+
+            git pull origin prod
+
+            npm install
+
+            npm run build
+
+            pm2 restart all
