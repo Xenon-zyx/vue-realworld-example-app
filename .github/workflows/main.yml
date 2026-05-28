@@ -1,4 +1,4 @@
-name: deploy on push production branch
+name: deploy vue
 
 on:
   push:
@@ -13,21 +13,40 @@ jobs:
       - name: check out the code to build server
         uses: actions/checkout@v4
 
-      - name: deploying latest change on ec2
-        uses: appleboy/ssh-action@master
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: build the code
+        run: |
+          npm install
+          npm run build
+
+      - name: set ubuntu owner
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-
           script: |
-            cd /home/ubuntu/vue-realworld-example-app
+            sudo chown -R ubuntu /var/www/html
 
-            git pull origin prod
+      - name: copy file to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./dist/*"
+          target: "/var/www/html"
+          strip_components: 1
 
-            npm install
-
-            npm run build
-
-            pm2 restart all
+      - name: set root owner back
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo chown -R root /var/www/html
