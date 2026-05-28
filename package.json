@@ -47,8 +47,8 @@
     "lint-staged": "^8.2.1",
     "nyc": "^14.1.1",
 
-    "sass": "^1.32.0",
-    "sass-loader": "^7.1.0",
+    "sass": "1.32.13",
+    "sass-loader": "10.1.1",
 
     "vue-template-compiler": "^2.6.10"
   },
